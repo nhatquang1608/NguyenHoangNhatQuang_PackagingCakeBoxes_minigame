@@ -49,12 +49,13 @@ public class GameManager : MonoBehaviour
         {
             yield return new WaitForSeconds(1);
             time--;
-            timeText.text = "00 : " + time.ToString("00");
-            if(time == 0) 
+            if(time <= 0) 
             {
+                time = 0;
                 isGameOver = true;
                 GameOver(false);
             }
+            timeText.text = "00 : " + time.ToString("00");
         }
     }
 

@@ -16,6 +16,8 @@ public class TopSceneManager : MonoBehaviour
         playButton.onClick.AddListener(() => SceneManager.LoadScene("SelectScene"));
         guidButton.onClick.AddListener(() => ShowGuid(true));
         exitButton.onClick.AddListener(() => ShowGuid(false));
+
+        ShowGuid(false);
     }
 
     private void ShowGuid(bool show)

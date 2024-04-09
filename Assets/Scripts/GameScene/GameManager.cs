@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -24,11 +25,14 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Button[] listHomeButtons;
     [SerializeField] private Transform[] listPositionsCompletedEffect;
 
+    private Coroutine countDownCoroutine;
+    private bool waiting;
+
     private void Start()
     {
         foreach(Button button in listRestartButtons)
         {
-            button.onClick.AddListener(NewGame);
+            button.onClick.AddListener(RestartGame);
         }
         foreach(Button button in listHomeButtons)
         {
@@ -39,12 +43,8 @@ public class GameManager : MonoBehaviour
         NewGame();
     }
 
-    IEnumerator CountDown()
+    private IEnumerator CountDown()
     {
-        time = 45;
-        timeText.text = "00 : " + time.ToString("00");
-        isGameOver = false;
-
         while(!isGameOver)
         {
             yield return new WaitForSeconds(1);
@@ -61,6 +61,11 @@ public class GameManager : MonoBehaviour
 
     public void NewGame()
     {
+        waiting = false;
+        time = 45;
+        timeText.text = "00 : " + time.ToString("00");
+        isGameOver = false;
+
         gameOver.alpha = 0f;
         gameOver.interactable = false;
         completedPanel.SetActive(false);
@@ -92,26 +97,44 @@ public class GameManager : MonoBehaviour
         board.CreateBox(SaveLoadData.Instance.listLevels.listLevelDetails[SaveLoadData.Instance.level].box);
         board.enabled = true;
 
-        StartCoroutine(CountDown());
+        if(countDownCoroutine != null) StopCoroutine(countDownCoroutine);
+
+        countDownCoroutine = StartCoroutine(CountDown());
+    }
+
+    public void RestartGame()
+    {
+        if(!waiting)
+        {
+            isGameOver = true;
+            NewGame();
+        }
     }
 
     public void NextGame()
     {
-        if(SaveLoadData.Instance.level < SaveLoadData.Instance.listLevels.listLevelDetails.Count - 1)
+        if(!waiting)
         {
-            SaveLoadData.Instance.level++;
+            if(SaveLoadData.Instance.level < SaveLoadData.Instance.listLevels.listLevelDetails.Count - 1)
+            {
+                SaveLoadData.Instance.level++;
+            }
+            NewGame();
         }
-        NewGame();
     }
 
     public void BackToHome()
     {
-        if(!isGameOver) SaveLoadData.Instance.listLevels.listLevelDetails[SaveLoadData.Instance.level].isCompleted = false;
-        SceneManager.LoadScene("SelectScene");
+        if(!waiting)
+        {
+            if(!isGameOver) SaveLoadData.Instance.listLevels.listLevelDetails[SaveLoadData.Instance.level].isCompleted = false;
+            SceneManager.LoadScene("SelectScene");
+        }
     }
 
     public void GameOver(bool completed)
     {
+        waiting = true;
         board.enabled = false;
         gameOver.interactable = true;
 
@@ -143,7 +166,9 @@ public class GameManager : MonoBehaviour
         Vector3 worldPosition = Camera.main.ScreenToWorldPoint(screenPosition);
         worldPosition.z = -1;
         GameObject newEffect = Instantiate (completedParticle, worldPosition, Quaternion.identity);
+
         yield return new WaitForSeconds(1f);
+
         Destroy(newEffect);
     }
 
@@ -173,5 +198,9 @@ public class GameManager : MonoBehaviour
             SoundManager.Instance.PlaySound(SoundManager.Instance.completedSound);
         }
         else SoundManager.Instance.PlaySound(SoundManager.Instance.failedSound);
+
+        yield return new WaitForSeconds(1f);
+
+        waiting = false;
     }
 }

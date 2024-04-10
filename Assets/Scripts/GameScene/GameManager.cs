@@ -107,6 +107,7 @@ public class GameManager : MonoBehaviour
         if(!waiting)
         {
             isGameOver = true;
+            SaveLoadData.Instance.SaveData();
             NewGame();
         }
     }
@@ -119,6 +120,7 @@ public class GameManager : MonoBehaviour
             {
                 SaveLoadData.Instance.level++;
             }
+            SaveLoadData.Instance.SaveData();
             NewGame();
         }
     }
@@ -128,6 +130,7 @@ public class GameManager : MonoBehaviour
         if(!waiting)
         {
             if(!isGameOver) SaveLoadData.Instance.listLevels.listLevelDetails[SaveLoadData.Instance.level].isCompleted = false;
+            SaveLoadData.Instance.SaveData();
             SceneManager.LoadScene("SelectScene");
         }
     }
